@@ -1,0 +1,48 @@
+{
+  "name": "step-dictionary",
+  "version": "0.1.2",
+  "description": "Utility for Cucumber-js step dictionary",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/midniteio/step-dictionary.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublish": "npm run build",
+    "lint": "eslint src test",
+    "unit-test": "mocha",
+    "test": "npm run build && npm run unit-test"
+  },
+  "keywords": [
+    "cucumber",
+    "cucumber-js",
+    "steps",
+    "step",
+    "definitions",
+    "dictionary"
+  ],
+  "dependencies": {
+    "@types/chai": "^4.3.3",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^18.11.0",
+    "glob": "^8.0.3",
+    "lodash": "^4.17.21",
+    "ts-node": "^10.9.1"
+  },
+  "devDependencies": {
+    "@types/eslint": "^8.4.6",
+    "@typescript-eslint/eslint-plugin": "5.40.1",
+    "@typescript-eslint/parser": "5.40.1",
+    "chai": "^4.3.6",
+    "eslint": "8.25.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-import-resolver-typescript": "3.5.1",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "mocha": "^10.1.0",
+    "typescript": "^4.8.4"
+  },
+  "author": "midniteio",
+  "license": "ISC"
+}

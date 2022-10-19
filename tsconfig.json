@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": ".",
+    "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "paths": {
+      "*": ["*"]
+    },
+    "plugins": [
+      {
+        "transform": "typescript-transform-paths"
+      }
+    ],
+    "types": ["@types/chai", "@types/mocha", "node"],
+    "typeRoots": ["src/typings"],
+    "inlineSourceMap": true,
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "lib": ["ES6", "dom", "ES2019"],
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "target": "es6",
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": false,
+    "strict": false
+  },
+  "include": ["**/*.ts", "test/step-dictionary-spec.ts", "test/step-dictionary.spec.ts"],
+  "exclude": ["node_modules", "dist", "test/features", "test/step"]
+}
