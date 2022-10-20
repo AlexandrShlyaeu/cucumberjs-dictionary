@@ -1,6 +1,6 @@
 {
-  "name": "step-dictionary",
-  "version": "0.1.2",
+  "name": "cucumber-dictionary",
+  "version": "0.1.3",
   "description": "Utility for Cucumber-js step dictionary",
   "main": "dist/index.js",
   "repository": {
@@ -43,6 +43,6 @@
     "mocha": "^10.1.0",
     "typescript": "^4.8.4"
   },
-  "author": "midniteio",
+  "author": "Aliaksandr Shliayeu",
   "license": "ISC"
 }

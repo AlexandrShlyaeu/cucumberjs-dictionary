@@ -6,66 +6,113 @@ import glob from 'glob';
 
 import generateReport from './generate-report';
 
-class CucumberDictionary {
-  private paths: string[];
-  private stepDefinitions: any;
+class StepDictionary {
+  private paths;
+  private stepDefinitions;
+  private featureFiles;
+  private stepExamples;
 
-  setup(pathArg: string) {
-    this.paths = this._getAllPaths(pathArg);
+  constructor(stepsPath: string, featurePath: string = stepsPath) {
+    this.paths = this._getStepsPaths(stepsPath);
+    this.featureFiles = this._getFeaturePaths(featurePath);
+    this.stepExamples = this._getStepExamples().join(' ');
     this.stepDefinitions = this._getStepDefinitions();
-    this.outputReport('@src');
   }
 
   getStepsJson() {
     return this.stepDefinitions;
   }
 
-  getStepThatMatches(phrase: any) {
-    return this.stepDefinitions.filter(function (stepDef: { regex: { test: (arg0: any) => any } }) {
+  getFeatureJson() {
+    return this.stepExamples;
+  }
+
+  getStepThatMatches(phrase) {
+    return this.stepDefinitions.filter(function (stepDef) {
       return stepDef.regex.test(phrase);
     });
   }
 
-  outputReport(outputPath: fs.PathOrFileDescriptor) {
+  outputReport(outputPath) {
     const report = generateReport(this.stepDefinitions);
     fs.writeFileSync(outputPath, report);
   }
 
-  _getStepDefinitions() {
-    const x = [];
-    this.paths.forEach((filePath: fs.PathOrFileDescriptor) => {
-      let fileData: string;
+  _getStepExamples() {
+    const examples = [];
+
+    this.featureFiles.forEach(file => {
+      let fileData;
+
       try {
-        fileData = fs.readFileSync(filePath, { encoding: 'utf8' });
+        fileData = fs.readFileSync(file, { encoding: 'utf8' });
       } catch (e) {
         console.log(path + ' could not be read, will skip and continue', e);
       }
       if (fileData) {
-        const stepDefinitionMatches = fileData.match(/(Then|When|Given).*function\s?\(.*\)/g);
+        const arr = fileData.match(/(Then|When|Given|After|And).*[\s\S]?.*?/g);
+        const x = new Set(arr);
+        const examplesMatches = [...x];
+        if (examplesMatches) {
+          examplesMatches.forEach(example => {
+            examples.push(example);
+          });
+        }
+      }
+    });
+    return examples;
+  }
+
+  _getStepDefinitions() {
+    const stepDefs = [];
+
+    this.paths.forEach(file => {
+      let fileData;
+
+      try {
+        fileData = fs.readFileSync(file, { encoding: 'utf8' });
+      } catch (e) {
+        console.log(path + ' could not be read, will skip and continue', e);
+      }
+      if (fileData) {
+        const arr1 = fileData.match(/(Then|When|Given|After)[\s\S]*?.*async[\s\S]*?\(.*\)/g);
+        const arr2 = fileData.match(/(Then|When|Given|After)[\s\S]*?.*async function[\s\S]*?\(.*\)/g);
+        const arr3 = fileData.match(/(Then|When|Given|After)[\s\S]*?.*function[\s\S]*?\(.*\)/g);
+        const x = new Set([...arr1, ...arr2, ...arr3]);
+        const stepDefinitionMatches = [...x];
         if (stepDefinitionMatches) {
           stepDefinitionMatches.forEach(stepDefinition => {
             const stepRegex = stepDefinition.match(/\/.*\//)[0];
-            const lineNumber = fileData.substring(0, fileData.indexOf(stepRegex)).split('\n').length;
-            const keyword = stepDefinition.substring(5, stepDefinition.indexOf('('));
+            const line = fileData.substring(0, fileData.indexOf(stepRegex)).split('\n').length;
+            const keyword = stepDefinition.substring(0, stepDefinition.indexOf('('));
             const regex = new RegExp(stepRegex.substring(1, stepRegex.length - 1));
-            x.push({
-              regex: regex,
-              keyword: keyword,
-              params: stepDefinition.match(/function\s?\(.*\)/)[0].match(/\(.*\)/)[0],
-              file: filePath,
-              line: lineNumber,
+            const params = stepDefinition.match(/(async|function|async function)\s?(\([\s\S]*?\))/)[2];
+            const r = new RegExp(
+              stepRegex
+                .substring(1, stepRegex.length - 1)
+                .replace(/\^/, '')
+                .replace(/\$/, '')
+            );
+            const example = this.stepExamples.match(r);
+            stepDefs.push({
+              regex,
+              keyword,
+              params,
+              file,
+              line,
+              example: example ? example[0] : '-',
             });
           });
         }
       }
     });
-    return x;
+    return stepDefs;
   }
 
-  _getAllPaths(pathArg: any) {
+  _getStepsPaths(pathArg) {
     const paths = typeof pathArg === 'string' ? [pathArg] : pathArg;
-    const pth = _.flattenDeep(
-      paths.map((filePath: string) => {
+    return _.flattenDeep(
+      paths.map(filePath => {
         if (path.parse(filePath).ext) {
           return path.resolve(filePath);
         } else {
@@ -73,9 +120,19 @@ class CucumberDictionary {
         }
       })
     );
-    this.paths = pth;
-    return pth;
+  }
+  _getFeaturePaths(pathArg) {
+    const paths = typeof pathArg === 'string' ? [pathArg] : pathArg;
+    return _.flattenDeep(
+      paths.map(filePath => {
+        if (path.parse(filePath).ext) {
+          return path.resolve(filePath);
+        } else {
+          return glob.sync(path.join(filePath, '**', '*.feature'));
+        }
+      })
+    );
   }
 }
 
-export { CucumberDictionary };
+export { StepDictionary };
